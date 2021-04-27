@@ -1,0 +1,23 @@
+body, #cesiumContainer {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow-y: hidden;
+    min-height: 1em;
+}
+
+#cesiumContainer {
+    height: 100%;
+}
+
+.cesium-viewer-fullscreenContainer {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+    padding: 0;
+    width: 29px;
+    height: 29px;
+    overflow: hidden;
+}

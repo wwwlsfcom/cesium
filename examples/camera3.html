@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3d demo</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <link rel="stylesheet" href="../style/style.css">
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="creditViewport" style="display: none"></div>
+<div id="creditContainer" style="display: none"></div>
+<script src="../js/Cesium.js"></script>
+<script src="../js/viewer.config.js"></script>
+<script>
+    // var center = Cesium.Cartesian3.fromRadians(2.4213211833389243, 0.6171926869414084, 3626.0426275055174);
+    // var transform = Cesium.Transforms.eastNorthUpToFixedFrame(center);
+    // viewer.scene.camera.lookAtTransform(transform, new Cesium.HeadingPitchRange(0, -Math.PI/4, 2900));
+    // // Orbit this point
+    // viewer.clock.onTick.addEventListener(function(clock) {
+    //     viewer.scene.camera.rotateLeft(0.005);
+    // });
+
+    /*var center = new Cesium.Cartesian3(-2177300.110159654, 4389270.233702066, 4069785.604158846);
+    viewer.camera.lookAt(center, new Cesium.Cartesian3(1000, 0, 1000.0));*/
+
+
+    const center = new Cesium.Cartesian3(-2177300.110159654, 4389270.233702066, 4069785.604158846);
+    const offset = new Cesium.Cartesian3(0, 0, 1000.0);
+    /*const center = Cesium.Cartesian3.fromDegrees(-98.0, 40.0);
+    const offset = new Cesium.Cartesian3(0.0, -4790000.0, 3930000.0);*/
+
+    // viewer.camera.lookAt(center, offset);
+    const m = Cesium.Transforms.eastNorthUpToFixedFrame(center);
+    viewer.camera.lookAtTransform(m, offset);
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <script src="../js/Cesium.js"></script>
+    <script>
+        window.CESIUM_BASE_URL = '/davalve3D/Cesium/';
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODhiZTg3Yi02ODZhLTRkZjctOGQyOC05ODk3OGI3NTY4OWUiLCJpZCI6NTI4NjYsImlhdCI6MTYxODg4ODUzOX0.QXg-C0OzeP-_d5feoeeNkx_5NYQBYKywQN8PKEnSjWY';
+    </script>
+    <script src="TransformControler.js"></script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+    var viewer = new Cesium.Viewer("cesiumContainer");
+    var instance = new Cesium.GeometryInstance({
+        geometry: new Cesium.EllipseGeometry({
+            center: Cesium.Cartesian3.fromDegrees(-100.0, 20.0),
+            semiMinorAxis: 500000.0,
+            semiMajorAxis: 1000000.0,
+            rotation: Cesium.Math.PI_OVER_FOUR,
+            vertexFormat: Cesium.VertexFormat.POSITION_AND_ST
+        }),
+        id: 'object returned when this instance is picked and to get/set per-instance attributes'
+    });
+    const p =
+        new Cesium.Primitive({
+            geometryInstances: instance,
+            appearance: new Cesium.EllipsoidSurfaceAppearance({
+                material: Cesium.Material.fromType('Checkerboard')
+            })
+        });
+    const m =
+        caculateRotationBetweenCartesians(Cesium.Cartesian3.fromDegrees(-100.0, 20.0,0), Cesium.Cartesian3.fromDegrees(-100.0, 21, 0),)
+    p.modelMatrix = m;
+        viewer.scene.primitives.add(p);
+
+
+    /*  var redBox = viewer.entities.add({
+          show:false,
+          name: "Red box with black outline",
+          position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 300000.0),
+          box: {
+              dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+              material: Cesium.Color.RED.withAlpha(0.5),
+              outline: true,
+              outlineColor: Cesium.Color.BLACK,
+          },
+      });
+
+      var outlineOnly = viewer.entities.add({
+          show:false,
+          name: "Yellow box outline",
+          position: Cesium.Cartesian3.fromDegrees(-100.0, 40.0, 300000.0),
+          box: {
+              dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+              fill: false,
+              outline: true,
+              outlineColor: Cesium.Color.YELLOW,
+          },
+      });
+
+      var point = viewer.entities.add({
+          position: outlineOnly.position,
+          model: {
+              uri:'../models/aaa.gltf'
+          }
+      });
+  */
+    viewer.zoomTo(p);
+
+</script>
+</body>
+</html>

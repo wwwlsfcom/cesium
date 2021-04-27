@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <script src="index.js"></script>
+    <script src="TransformControler.js"></script>
+    <style type="text/css">
+        #toolbar {
+            position: absolute;
+            left: 1em;
+            top: 1em;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="toolbar">
+    <label>x:</label> <input style="width: 50em;" type="range" min="-500.0" max="500.0" step="1"
+                             data-bind="value: x, valueUpdate: 'input'">
+    <br/>
+    <label>y:</label> <input style="width: 50em;" type="range" min="-500.0" max="500.0" step="1"
+                             data-bind="value: y, valueUpdate: 'input'">
+    <br/>
+    <label>z:</label> <input style="width: 50em;" type="range" min="-500.0" max="500.0" step="1"
+                             data-bind="value: z, valueUpdate: 'input'">
+</div>
+<div id="creditViewport" style="display: none"></div>
+<div id="creditContainer" style="display: none"></div>
+<script src="../js/Cesium.js"></script>
+<script src="../js/viewer.config.js"></script>
+<script>
+    var viewModel = {
+        x: 0, y: 0, z: 0
+    };
+    Cesium.knockout.track(viewModel);
+    var toolbar = document.getElementById("toolbar");
+    Cesium.knockout.applyBindings(viewModel, toolbar);
+    Cesium.knockout
+        .getObservable(viewModel, "x")
+        .subscribe(function (step) {
+            step = Number(step);
+            if (isNaN(step)) {
+                return;
+            }
+            changeX(globetileset[0], step);
+        });
+    Cesium.knockout
+        .getObservable(viewModel, "y")
+        .subscribe(function (step) {
+            step = Number(step);
+            if (isNaN(step)) {
+                return;
+            }
+            changeY(globetileset[0], step);
+        });
+    Cesium.knockout
+        .getObservable(viewModel, "z")
+        .subscribe(function (step) {
+            step = Number(step);
+            if (isNaN(step)) {
+                return;
+            }
+            changeZ(globetileset[0], step);
+        });
+    const urls = [
+        // '/model/tree/tileset.json',
+        // '/model/scene/tileset.json',
+        // '/model/bs/tileset.json',
+        '/model/cx/tileset.json',
+        // '/model/floor/tileset.json',
+    ];
+    const tile3dset = urls.map(url => new Cesium.Cesium3DTileset({
+        url
+    }));
+    const promises = tile3dset.map(tileset => tileset.readyPromise);
+    const target = [-2798255.885205939, 5005243.404062396, 2783161.219126671];
+    const lng = target[0];
+    const lat = target[1];
+    let globetileset;
+    Promise.all(promises).then(tilesets => {
+        globetileset = tilesets;
+        tilesets.forEach(tileset => {
+
+            // let t1 = moveToCenter(tileset);
+            // let r = rotation({roll: -18, pitch: -8, head: -9});
+            // let t2 = moveFromCenter(pos);
+            // let m = t1;
+            // Cesium.Matrix4.multiply(r, m, m);
+            // Cesium.Matrix4.multiply(t2, m, m);
+            //  tileset.modelMatrix = m;
+            let transform = new Cesium.Matrix4();
+
+            let firstTransform = Cesium.Transforms.eastNorthUpToFixedFrame(tileset.boundingSphere.center);
+            Cesium.Matrix4.inverse(firstTransform, transform);
+
+            const pos = new Cesium.Cartesian3(...target);
+            //法线
+            // var chicB = Cesium.Cartographic.fromCartesian(pos);
+            // chicB.height += 1000;
+            // var dB = Cesium.Cartographic.toCartesian(chicB);
+            // var normaB = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(dB, pos, new Cesium.Cartesian3()), new Cesium.Cartesian3());
+            // const angle = Cesium.Math.toRadians(30);
+            // var rotation = Cesium.Quaternion.fromAxisAngle(normaB, angle);
+            var rotationTransform = Cesium.Matrix4.fromTranslationQuaternionRotationScale(Cesium.Cartesian3.ZERO, rotation, new Cesium.Cartesian3(1, 1, 1));
+            // Cesium.Matrix4.multiply(rotationTransform, transform, transform);
+
+            const headingPitchRoll = Cesium.HeadingPitchRoll.fromDegrees(-15, 0, 0, new Cesium.HeadingPitchRoll());
+            const matrix3 = Cesium.Matrix3.fromHeadingPitchRoll(headingPitchRoll, new Cesium.Matrix3());
+            // const quaternion = Cesium.Quaternion.fromHeadingPitchRoll(headingPitchRoll, new Cesium.Quaternion());
+            const matrix4 = Cesium.Matrix4.fromRotationTranslation(matrix3);
+            Cesium.Matrix4.multiply(matrix4, transform, transform);
+
+            let secondTransform = Cesium.Transforms.eastNorthUpToFixedFrame(pos);
+            Cesium.Matrix4.multiply(secondTransform, transform, transform);
+
+            //法线
+            var chicB = Cesium.Cartographic.fromCartesian(pos);
+            chicB.height += 59;
+            var dB = Cesium.Cartographic.toCartesian(chicB);
+            Cesium.Cartesian3.subtract(dB, pos, dB);
+            //升高
+            let raiseHeightTransform =  Cesium.Matrix4.fromTranslation(dB);
+           Cesium.Matrix4.multiply(raiseHeightTransform, transform, transform);
+
+            tileset.modelMatrix = transform;
+
+            viewer.scene.primitives.add(tileset);
+        });
+        viewer.flyTo(tilesets[0]);
+        // viewer.camera.flyTo({
+        //     destination: Cesium.Cartesian3.fromDegrees(lng, lat, 5000.0),
+        //     orientation: {
+        //         heading: Cesium.Math.toRadians(0),
+        //         pitch: Cesium.Math.toRadians(-90),
+        //         roll: 0.0,
+        //     },
+        // });
+    }).catch(function (error) {
+        console.error(error);
+    });
+</script>
+</body>
+</html>

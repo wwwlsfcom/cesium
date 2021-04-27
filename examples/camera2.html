@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3d demo</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <style>
+        #toolbar {
+            position: fixed;
+            top: 1em;
+            left: 1em;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="creditViewport" style="display: none"></div>
+<div id="creditContainer" style="display: none"></div>
+<div id="toolbar"><input id="positionValue"/></div>
+<script src="../js/Cesium.js"></script>
+<script src="../js/viewer.config.js"></script>
+<script>
+    let surface = new Cesium.Cartesian3(-2177765.1888008043, 4388818.484965012, 4070020.5807486214);
+    surface = Cesium.Cartographic.fromCartesian(surface);
+
+    let destination = Cesium.Cartographic.fromRadians(surface.longitude, surface.latitude, surface.height + 5000);
+
+    surface = Cesium.Cartographic.toCartesian(surface);
+    destination = Cesium.Cartographic.toCartesian(destination);
+
+    let start = Cesium.Cartographic.fromCartesian(destination);
+    const lng = Cesium.Math.toDegrees(start.longitude);
+    const lat = Cesium.Math.toDegrees(start.latitude);
+    const height = start.height;
+    start = Cesium.Cartographic.toCartesian(start);
+
+    let end = Cesium.Cartographic.fromDegrees(lng + 0.01, lat, height);
+    end = Cesium.Cartographic.toCartesian(end);
+    const east = Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3());
+
+    end = Cesium.Cartographic.fromDegrees(lng - 0.01, lat, height);
+    end = Cesium.Cartographic.toCartesian(end);
+    const west = Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3());
+
+    end = Cesium.Cartographic.fromDegrees(lng, lat + 0.0001, height);
+    end = Cesium.Cartographic.toCartesian(end);
+    const north = Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3());
+
+    end = Cesium.Cartographic.fromDegrees(lng, lat - 0.0001, height);
+    end = Cesium.Cartographic.toCartesian(end);
+    const south = Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3());
+
+    var direction = Cesium.Cartesian3.subtract(surface, destination, new Cesium.Cartesian3());
+    viewer.camera.flyTo({
+        destination,
+        orientation: {
+            direction,
+            up: north
+        }
+    });
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+    handler.setInputAction(function (event) {
+        var pickedPosition = viewer.scene.pickPosition(event.position);
+        if (Cesium.defined(pickedPosition)) {
+            document.querySelector('#positionValue').value = pickedPosition;
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+</script>
+</body>
+</html>

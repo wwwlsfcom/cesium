@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>坐标选择工具</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <link rel="stylesheet" href="../style/style.css">
+    <style type="text/css">
+        #toolbar {
+            position: fixed;
+            left: 1em;
+            top: 1em;
+        }
+
+        input {
+            width: 40em;
+        }
+    </style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="toolbar">
+    <input id="positionInput"/>
+</div>
+<div id="creditViewport" style="display: none"></div>
+<div id="creditContainer" style="display: none"></div>
+<script src="../js/Cesium.js"></script>
+<script src="../js/viewer.config.js"></script>
+<script>
+    var handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+    handler.setInputAction(function (event) {
+        var pickedPosition = viewer.scene.pickPosition(event.position);
+        if (Cesium.defined(pickedPosition)) {
+            let val = pickedPosition.toString();
+            val = val.substring(1, val.length - 1);
+            document.querySelector('#positionInput').value = val;
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+</script>
+</body>
+</html>

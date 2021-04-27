@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3d demo</title>
+    <link rel="stylesheet" href="../../style/widgets.css">
+    <link rel="stylesheet" href="../../style/style.css">
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="creditViewport" style="display: none"></div>
+<div id="creditContainer" style="display: none"></div>
+<script src="../../js/Cesium.js"></script>
+<script src="../../js/viewer.config.js"></script>
+<script>
+
+    const surface = Cesium.Cartographic.fromCartesian(new Cesium.Cartesian3(-2806994.3968983316, 5000431.732913538, 2783004.2685893658));
+    const {longitude, latitude, height} = surface;
+    const destination = Cesium.Cartesian3.fromRadians(longitude, latitude, height + 50000);
+    // const axis = Cesium.Cartesian3.subtract(Cesium.Cartographic.toCartesian(surface), destination, new Cesium.Cartesian3());
+    const axis = Cesium.Cartesian3.UNIT_Z;
+    // viewer.camera.flyTo({
+    //     destination,
+    //     complete: () => {
+    viewer.clock.onTick.addEventListener((e) => {
+        viewer.scene.camera.lookUp(Math.PI / 720);
+    });
+    //     }
+    // });
+
+</script>
+</body>
+</html>

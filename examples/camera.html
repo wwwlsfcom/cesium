@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../style/widgets.css">
+    <script src="../js/Cesium.js"></script>
+    <script>
+        window.CESIUM_BASE_URL = '/davalve3D/Cesium/';
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODhiZTg3Yi02ODZhLTRkZjctOGQyOC05ODk3OGI3NTY4OWUiLCJpZCI6NTI4NjYsImlhdCI6MTYxODg4ODUzOX0.QXg-C0OzeP-_d5feoeeNkx_5NYQBYKywQN8PKEnSjWY';
+    </script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+    var viewer = new Cesium.Viewer("cesiumContainer",{
+        terrainProvider: Cesium.createWorldTerrain()
+    });
+    /********start*********/
+    viewer.entities.add({
+        polygon: {
+            hierarchy: {
+                positions: Cesium.Cartesian3.fromDegreesArray([
+                    -94.0,
+                    30.0,
+
+                    -89.0,
+                    30.0,
+
+                    -92.0,
+                    40.0
+                ])
+            }
+        }
+    });
+
+    var heading = Cesium.Math.toRadians(0);
+    var pitch = Cesium.Math.toRadians(-90);
+    viewer.flyTo( viewer.entities, new Cesium.HeadingPitchRange(heading, pitch))
+        .then(function(result){
+            if (result) {
+                viewer.selectedEntity = viewer.entities;
+            }
+        });;
+</script>
+</body>
+</html>

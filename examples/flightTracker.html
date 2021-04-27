@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>cesium学习</title>
+    <meta charset="utf-8">
+    <!-- Include the CesiumJS JavaScript and CSS files -->
+    <script src="../js/Cesium.js"></script>
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <link href="../style/widgets.css" rel="stylesheet">
+    <style type="text/css">
+        body, #cesiumContainer {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script>
+        window.CESIUM_BASE_URL = 'Cesium/';
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODhiZTg3Yi02ODZhLTRkZjctOGQyOC05ODk3OGI3NTY4OWUiLCJpZCI6NTI4NjYsImlhdCI6MTYxODg4ODUzOX0.QXg-C0OzeP-_d5feoeeNkx_5NYQBYKywQN8PKEnSjWY';
+    </script>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<script>
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+        terrainProvider: Cesium.createWorldTerrain()
+    });
+
+    function loadData() {
+        return new Promise(resolve => {
+            $.ajax('data/temp.json', {
+                success: function (res) {
+                    resolve(res);
+                }
+            })
+        });
+    }
+
+    async function initViewClock(viewer) {
+        const flightData = await loadData();
+        const timeStepInSeconds = 30;
+        const totalSeconds = timeStepInSeconds * (flightData.length - 1);
+        const start = Cesium.JulianDate.fromIso8601("2020-03-09T23:10:00Z");
+        const stop = Cesium.JulianDate.addSeconds(start, totalSeconds, new Cesium.JulianDate());
+        viewer.clock.startTime = start.clone();
+        viewer.clock.stopTime = stop.clone();
+        viewer.clock.currentTime = start.clone();
+        viewer.timeline.zoomTo(start, stop);
+        // Speed up the playback speed 50x.
+        viewer.clock.multiplier = 50;
+        // Start playing the scene.
+        viewer.clock.shouldAnimate = true;
+
+        // The SampledPositionedProperty stores the position and timestamp for each sample along the radar sample series.
+        const positionProperty = new Cesium.SampledPositionProperty();
+
+        for (let i = 0; i < flightData.length; i++) {
+            const dataPoint = flightData[i];
+
+            // Declare the time for this individual sample and store it in a new JulianDate instance.
+            const time = Cesium.JulianDate.addSeconds(start, i * timeStepInSeconds, new Cesium.JulianDate());
+            const position = Cesium.Cartesian3.fromDegrees(dataPoint.longitude, dataPoint.latitude, dataPoint.height);
+            // Store the position along with its timestamp.
+            // Here we add the positions all upfront, but these can be added at run-time as samples are received from a server.
+            positionProperty.addSample(time, position);
+
+            viewer.entities.add({
+                description: `Location: (${dataPoint.longitude}, ${dataPoint.latitude}, ${dataPoint.height})`,
+                position: position,
+                point: {pixelSize: 10, color: Cesium.Color.RED}
+            });
+        }
+
+        return {
+            start, stop, positionProperty
+        }
+    }
+
+
+    // STEP 6 CODE (airplane entity)
+    async function loadModel() {
+        const {start, stop, positionProperty} = await initViewClock(viewer);
+        // Load the glTF model from Cesium ion.
+        //const airplaneUri = await Cesium.IonResource.fromAssetId(your_asset_id);
+        const airplaneUri = 'models/Cesium_Air.glb';
+        const airplaneEntity = viewer.entities.add({
+            availability: new Cesium.TimeIntervalCollection([new Cesium.TimeInterval({start, stop})]),
+            position: positionProperty,
+            // Attach the 3D model instead of the green point.
+            model: {uri: airplaneUri},
+            // Automatically compute the orientation from the position.
+            orientation: new Cesium.VelocityOrientationProperty(positionProperty),
+            path: new Cesium.PathGraphics({width: 3})
+        });
+
+        viewer.trackedEntity = airplaneEntity;
+    }
+
+    loadModel();
+
+
+</script>
+</div>
+</body>
+</html>
