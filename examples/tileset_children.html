@@ -13,6 +13,96 @@
 <script src="../js/Cesium.js"></script>
 <script src="../js/viewer.config.js"></script>
 <script>
+    const url = '/scene/data/scene0421/tileset.json';
+    const tileset = new Cesium.Cesium3DTileset({
+        url
+    });
+    /* tileset.tileLoad.addEventListener(function (tile) {
+         processTileFeatures(tile, feature => {
+             if (feature.hasProperty('name')) {
+                 const name = feature.getProperty('name');
+                 console.log(`${name} loaded`);
+                 if (`${name}` == '22f') {
+                     var label = new Cesium.Label();
+                     label.text = name;
+                     label.position = Cesium.Matrix4.getTranslation(tile.modelMatrix, new Cesium.Cartesian3());
+                     viewer.scene.camera.lookAtTransform(tile.computedTransform);
+                     viewer.entities.add(label);
+                     viewer.zoomTo(label);
+                 }
+             }
+         });
+     });
+
+     tileset.tileUnload.addEventListener(function (tile) {
+         processTileFeatures(tile, feature => {
+             if (feature.hasProperty('name')) {
+                 const name = feature.getProperty('name');
+                 // console.log(`${name} unloaded`);
+             }
+         });
+     });*/
+    tileset.readyPromise.then(tileset => {
+        viewer.scene.primitives.add(tileset);
+        //viewer.zoomTo(tileset);
+        viewChildren(tileset.root, 0);
+    });
+
+
+    function viewChildren(tile, no) {
+        processTileFeatures(tile, feature => {
+            if (feature.hasProperty('name')) {
+                const name = feature.getProperty('name');
+                console.log(`tile.name=${name}`);
+            }
+        });
+        if (tile.children) {
+            tile.children.forEach(c => {
+                no++;
+                no = viewChildren(c, no);
+            });
+        }
+        return no;
+    }
+
+    function processContentFeatures(content, callback) {
+
+        var featuresLength = content.featuresLength;
+
+        for (var i = 0; i < featuresLength; ++i) {
+
+            var feature = content.getFeature(i);
+
+            callback(feature);
+
+        }
+
+    }
+
+    function processTileFeatures(tile, callback) {
+
+        var content = tile.content;
+
+        var innerContents = content.innerContents;
+
+        if (Cesium.defined(innerContents)) {
+
+            var length = innerContents.length;
+
+            for (var i = 0; i < length; ++i) {
+
+                processContentFeatures(innerContents[i], callback);
+
+            }
+
+        } else {
+
+            processContentFeatures(content, callback);
+
+        }
+
+    }
+
 
 </script>
 </body>

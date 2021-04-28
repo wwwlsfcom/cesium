@@ -9,7 +9,7 @@
     const terrainProvider = Cesium.createWorldTerrain();
     window.viewer = new Cesium.Viewer('cesiumContainer', {
         imageryProvider,
-        terrainProvider,
+        // terrainProvider,
         // sceneMode: Cesium.SceneMode.COLUMBUS_VIEW,
         infoBox: false,
         // geocoder: false,
